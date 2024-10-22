@@ -13,6 +13,7 @@
 
 - name: load SystemD setup
   ansible.builtin.include_role:
+    name: common
     tasks_from: systemd_setup
 
 # part of app_prerequisites.yml
