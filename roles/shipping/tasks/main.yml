@@ -9,7 +9,7 @@
     state: installed
 
 - name: Load SQL File
-  ansible.builtin.shell: mysql -h mysql-{{ env }}.rdevopsb81.online -uroot -pRoboShop@1 < /app/db/{{ item }}.sql
+  ansible.builtin.shell: mysql -h mysql-{{ env }}.hptldevops.online -uroot -pRoboShop@1 < /app/db/{{ item }}.sql
   loop:
     - schema
     - app-user
