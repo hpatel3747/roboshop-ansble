@@ -1,6 +1,3 @@
-# Install golang
-#dnf install golang -y
-
 - name: Install golang
   ansible.builtin.dnf:
     name: golang
