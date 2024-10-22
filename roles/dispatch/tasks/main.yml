@@ -6,6 +6,15 @@
     name: golang
     state: installed
 
+- name: load app prerequisite
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: app_prerequisites
+
+- name: load SystemD setup
+  ansible.builtin.include_role:
+    tasks_from: systemd_setup
+
 # part of app_prerequisites.yml
 #add application user roboshop
 #useradd roboshop
@@ -27,3 +36,7 @@
   args:
     chdir: /app
 
+- name: restart dispatch service
+  ansible.builtin.systemd_service:
+    name: dispatch
+    state: restarted
