@@ -1,0 +1,30 @@
+# Install golang
+#dnf install golang -y
+
+- name: Install golang
+  ansible.builtin.dnf:
+    name: golang
+    state: installed
+
+# part of app_prerequisites.yml
+#add application user roboshop
+#useradd roboshop
+#setup an app directory
+#mkdir /app
+
+  #download application code to created app directory
+# curl -L -o /tmp/dispatch.zip https://roboshop-artifacts.s3.amazonaws.com/dispatch-v3.zip
+# cd /app
+# unzip /tmp/dispatch.zip
+  
+# download dependencies and build the software
+cd /app
+go mod init dispatch
+go get
+go build
+
+- name: build golang software
+  ansible.builtin.shell: go mod init dispatch ; go get ; go build
+  args:
+    chdir: /app
+
