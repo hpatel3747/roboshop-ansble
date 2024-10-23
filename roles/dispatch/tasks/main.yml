@@ -22,3 +22,6 @@
   ansible.builtin.systemd_service:
     name: dispatch
     state: restarted
+
+# once installed, logon to dispatch server and check /var/log/messages to verify if the order status
+# systemctl status dispatch : tail -f /var/log/messages
