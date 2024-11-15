@@ -1,4 +1,23 @@
-- name: Load NodeJS
+#- name: Load NodeJS
+#  ansible.builtin.include_role:
+#    name: common
+#    tasks_from: nodejs
+
+- name: Install Docker
   ansible.builtin.include_role:
     name: common
-    tasks_from: nodejs
+    tasks_from: docker
+
+- name: Start App container
+  containers.podman.podman_container:
+    name: user
+    image: public.ecr.aws/w8x4g9h7/roboshop-v3/user
+    state: started
+    restart: true
+    restart_policy: "always"
+    ports:
+      - "8080:8080"
+    env:
+      MONGO: "{{ lookup('hashi_vault', 'roboshop-{{env}}/data/user:MONGO token={{ vault_token }} url=http://vault-internal.hptldevops.online:8200')}}"
+      MONGO_URL: "{{ lookup('hashi_vault', 'roboshop-{{env}}/data/user:MONGO_URL token={{ vault_token }} url=http://vault-internal.hptldevops.online:8200')}}"
+      REDIS_URL: "{{ lookup('hashi_vault', 'roboshop-{{env}}/data/user:REDIS_URL token={{ vault_token }} url=http://vault-internal.hptldevops.online:8200')}}"
