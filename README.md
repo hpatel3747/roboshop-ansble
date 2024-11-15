@@ -1,5 +1,5 @@
 ## roboshop-ansible
-The ansible code to deploy apps in docker containers
+Ansible code to deploy apps in docker containers
 ### contanerized apps
 - cart
 - catalogue
