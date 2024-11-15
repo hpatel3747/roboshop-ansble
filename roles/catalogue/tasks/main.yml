@@ -1,24 +1,52 @@
-- name: Load NodeJS
+#- name: Load NodeJS
+#  ansible.builtin.include_role:
+#    name: common
+#    tasks_from: nodejs
+#
+#- name: Copy MongoDB repo file
+#  ansible.builtin.copy:
+#    src: mongodb.repo
+#    dest: /etc/yum.repos.d/mongodb.repo
+#
+#- name: Install MongoDB Client
+#  ansible.builtin.dnf:
+#    name: mongodb-mongosh
+#    state: installed
+#
+#- name: Load Master Data
+#  ansible.builtin.shell: mongosh --host mongodb-{{ env }}.hptldevops.online </app/db/master-data.js
+#
+#- name: Restart Catalogue Service
+#  ansible.builtin.systemd_service:
+#    name: catalogue
+#    state: restarted
+
+- name: Install Docker
   ansible.builtin.include_role:
     name: common
-    tasks_from: nodejs
+    task_from: docker
 
-- name: Copy MongoDB repo file
-  ansible.builtin.copy:
-    src: mongodb.repo
-    dest: /etc/yum.repos.d/mongodb.repo
-
-- name: Install MongoDB Client
-  ansible.builtin.dnf:
-    name: mongodb-mongosh
-    state: installed
-
-- name: Load Master Data
-  ansible.builtin.shell: mongosh --host mongodb-{{ env }}.hptldevops.online </app/db/master-data.js
-
-- name: Restart Catalogue Service
-  ansible.builtin.systemd_service:
+- name: Start App Container
+  containers.podman.podman_container:
     name: catalogue
-    state: restarted
+    image: public.ecr.aws/w8x4g9h7/roboshop-v3/catalogue
+    state: started
+    restart: true
+    restart_policy: "always"
+    ports:
+      - "8080:8080"
+    env:
+      MONGO: "{{ lookup('hashi_vault', 'roboshop-{{env}}/data/catalogue:MONGO token={{ vault_token }} url=http://vault-internal.rdevopsb81.online:8200')}}"
+      MONGO_URL: "{{ lookup('hashi_vault', 'roboshop-{{env}}/data/catalogue:MONGO_URL token={{ vault_token }} url=http://vault-internal.rdevopsb81.online:8200')}}"
 
+- name: Schema container
+  containers.podman.podman_container:
+    name: catalogue-schema
+    image: public.ecr.aws/w8x4g9h7/roboshop-v3/schema-load
+    state: started
+    env:
+      DB_TYPE: "{{ lookup('hashi_vault', 'roboshop-{{env}}/data/catalogue:DB_TYPE token={{ vault_token }} url=http://vault-internal.rdevopsb81.online:8200')}}"
+      APP_GIT_URL: "{{ lookup('hashi_vault', 'roboshop-{{env}}/data/catalogue:APP_GIT_URL token={{ vault_token }} url=http://vault-internal.rdevopsb81.online:8200')}}"
+      DB_HOST: "{{ lookup('hashi_vault', 'roboshop-{{env}}/data/catalogue:DB_HOST token={{ vault_token }} url=http://vault-internal.rdevopsb81.online:8200')}}"
+      SCHEMA_FILE: "{{ lookup('hashi_vault', 'roboshop-{{env}}/data/catalogue:SCHEMA_FILE token={{ vault_token }} url=http://vault-internal.rdevopsb81.online:8200')}}"
 
