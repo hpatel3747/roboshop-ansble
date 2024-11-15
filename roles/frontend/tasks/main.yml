@@ -1,37 +1,63 @@
-- name: Disable Default Nginx
-  ansible.builtin.shell: dnf module disable nginx -y
+#- name: Disable Default Nginx
+#  ansible.builtin.shell: dnf module disable nginx -y
+#
+#- name: Enable Nginx 24 Version
+#  ansible.builtin.shell: dnf module enable nginx:1.24 -y
+#
+#- name: Install Nginx
+#  ansible.builtin.dnf:
+#    name: nginx
+#    state: installed
+#
+#- name: Copy nginx config file
+#  ansible.builtin.template:
+#    src: nginx.conf
+#    dest: /etc/nginx/nginx.conf
+#
+#- name: Clean up old application directory
+#  ansible.builtin.file:
+#    path: /usr/share/nginx/html
+#    state: absent
+#
+#- name: Create application directory
+#  ansible.builtin.file:
+#    path: /usr/share/nginx/html
+#    state: directory
+#
+#- name: Download and extract application content
+#  ansible.builtin.unarchive:
+#    src: https://roboshop-artifacts.s3.amazonaws.com/frontend-v3.zip
+#    dest: /usr/share/nginx/html
+#    remote_src: yes
+#
+#- name: Start nginx
+#  ansible.builtin.systemd_service:
+#    name: nginx
+#    state: restarted
+#    enabled: yes
 
-- name: Enable Nginx 24 Version
-  ansible.builtin.shell: dnf module enable nginx:1.24 -y
+- name: Install Docker
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: docker
 
-- name: Install Nginx
-  ansible.builtin.dnf:
-    name: nginx
-    state: installed
-
-- name: Copy nginx config file
-  ansible.builtin.template:
-    src: nginx.conf
-    dest: /etc/nginx/nginx.conf
-
-- name: Clean up old application directory
-  ansible.builtin.file:
-    path: /usr/share/nginx/html
-    state: absent
-
-- name: Create application directory
-  ansible.builtin.file:
-    path: /usr/share/nginx/html
-    state: directory
-
-- name: Download and extract application content
-  ansible.builtin.unarchive:
-    src: https://roboshop-artifacts.s3.amazonaws.com/frontend-v3.zip
-    dest: /usr/share/nginx/html
-    remote_src: yes
-
-- name: Start nginx
-  ansible.builtin.systemd_service:
-    name: nginx
-    state: restarted
-    enabled: yes
+- name: Start App container
+  containers.podman.podman_container:
+    name: frontend
+    image: public.ecr.aws/w8x4g9h7/roboshop-v3/frontend
+    state: started
+    restart: true
+    restart_policy: "always"
+    ports:
+      - "80:80"
+    env:
+      CATALOGUE_HOST: "{{ lookup('hashi_vault', 'roboshop-{{env}}/data/frontend:CATALOGUE_HOST token={{ vault_token }} url=http://vault-internal.hptldevops.online:8200')}}"
+      CATALOGUE_PORT: "{{ lookup('hashi_vault', 'roboshop-{{env}}/data/frontend:CATALOGUE_PORT token={{ vault_token }} url=http://vault-internal.hptldevops.online:8200')}}"
+      USER_HOST: "{{ lookup('hashi_vault', 'roboshop-{{env}}/data/frontend:USER_HOST token={{ vault_token }} url=http://vault-internal.hptldevops.online:8200')}}"
+      USER_PORT: "{{ lookup('hashi_vault', 'roboshop-{{env}}/data/frontend:USER_PORT token={{ vault_token }} url=http://vault-internal.hptldevops.online:8200')}}"
+      CART_HOST: "{{ lookup('hashi_vault', 'roboshop-{{env}}/data/frontend:CART_HOST token={{ vault_token }} url=http://vault-internal.hptldevops.online:8200')}}"
+      CART_PORT: "{{ lookup('hashi_vault', 'roboshop-{{env}}/data/frontend:CART_PORT token={{ vault_token }} url=http://vault-internal.hptldevops.online:8200')}}"
+      SHIPPING_HOST: "{{ lookup('hashi_vault', 'roboshop-{{env}}/data/frontend:SHIPPING_HOST token={{ vault_token }} url=http://vault-internal.hptldevops.online:8200')}}"
+      SHIPPING_PORT: "{{ lookup('hashi_vault', 'roboshop-{{env}}/data/frontend:SHIPPING_PORT token={{ vault_token }} url=http://vault-internal.hptldevops.online:8200')}}"
+      PAYMENT_HOST: "{{ lookup('hashi_vault', 'roboshop-{{env}}/data/frontend:PAYMENT_HOST token={{ vault_token }} url=http://vault-internal.hptldevops.online:8200')}}"
+      PAYMENT_PORT: "{{ lookup('hashi_vault', 'roboshop-{{env}}/data/frontend:PAYMENT_PORT token={{ vault_token }} url=http://vault-internal.hptldevops.online:8200')}}"
