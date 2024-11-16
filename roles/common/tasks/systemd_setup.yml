@@ -1,6 +1,6 @@
 - name: Copy the Service File
   ansible.builtin.template:
-    src: "{{ app_name }}.service"
+    src: "{{ component }}.service"
     dest: /etc/systemd/system/{{ component }}.service
 
 - name: Start Application Service
