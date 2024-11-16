@@ -8,7 +8,7 @@ Ansible code to deploy apps in docker containers
 - shipping
 - user
 
-### non containerized
+### non containerized (db)
 - mongodb
 - mysql
 - rabbitmq
